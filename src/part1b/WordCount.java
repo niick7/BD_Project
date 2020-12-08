@@ -18,6 +18,7 @@ public class WordCount {
 	    private Text word = new Text();
 	    // Using for in-Mapper
 	    List <Pair> pairs = new ArrayList<Pair>();
+	    
 
 	    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		    String line = value.toString();
