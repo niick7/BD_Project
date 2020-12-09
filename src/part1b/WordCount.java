@@ -1,8 +1,10 @@
-package org.myorg;
+package part1b;
 
 import java.io.IOException;
 import java.util.*;
-     
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.*;
 import org.apache.hadoop.io.*;
@@ -13,44 +15,41 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
      
 public class WordCount {
-	public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
-	    private final static IntWritable one = new IntWritable(1);
-	    private Text word = new Text();
-	    // Using for in-Mapper
-	    List <Pair> pairs = new ArrayList<Pair>();
+	// class Mapper
+	public static class MyMapper extends Mapper<Object, Text, Text, IntWritable> {
+	    private Map<String, Integer> map = new LinkedHashMap<>();
+	    // map
+	    public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+	        StringTokenizer itr = new StringTokenizer(value.toString());
+	        // loop to check each word
+	        while (itr.hasMoreTokens()) {
+	            String word = itr.nextToken();
+	            // existed
+	            if(map.containsKey(word)) {
+	                int cnt = (int)map.get(word) + 1;
+	                map.put(word, cnt);
+	            } // not existed
+	            else {
+	                map.put(word, 1);
+	            }
+	        }
+	    }
+	    // method cleanup: create Mapper output
+	    @Override
+	    public void cleanup(Context context) throws IOException, InterruptedException {
+	    	super.cleanup(context);
+	    	Iterator<Map.Entry<String, Integer>> temp = map.entrySet().iterator();
 
-	    public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-		    String line = value.toString();
-		    StringTokenizer tokenizer = new StringTokenizer(line);
-		    while (tokenizer.hasMoreTokens()) {
-		    	String word = tokenizer.nextToken();
-		    	// check existed
-				Pair pair = findPair (pairs, word);
-				if (pair == null)
-				{
-					pairs.add(new Pair(word, 1));
-					continue;
-				}
-				// Update existed
-				pair.setValue(pair.getValue() + 1);
-			}
-		    // Write to Mapper Output
-			for (int i = 0; i < pairs.size(); i++) {
-				Pair pair = pairs.get(i);
-				context.write(new Text(pair.getKey()), new IntWritable(pair.getValue()));
-			}
-		}
-		// Using for in-Mapper
-		public Pair findPair(List <Pair> list, String value) {
-			for (int i = 0; i < list.size(); i++) {
-				if (list.get(i).equals(value))
-					return list.get(i);
-			}
-			// not Existed
-		    return null;
-		}
+	        while(temp.hasNext()) {
+	            Map.Entry<String, Integer> entry = temp.next();
+	            String keyVal 	= entry.getKey();
+	            Integer countVal= entry.getValue();
+
+	            context.write(new Text(keyVal), new IntWritable(countVal));
+	        }
+	    }	    
 	}
-     
+	// class Reducer
 	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
 	    public void reduce(Text key, Iterable<IntWritable> values, Context context)
 	      throws IOException, InterruptedException {
@@ -61,7 +60,7 @@ public class WordCount {
 	        context.write(key, new IntWritable(sum));
 	    }
 	}
-     
+    // method main 
 	public static void main(String[] args) throws Exception {
 		Configuration conf = new Configuration();
 		 
@@ -71,7 +70,7 @@ public class WordCount {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 		 
-		job.setMapperClass(Map.class);
+		job.setMapperClass(MyMapper.class);
 		job.setReducerClass(Reduce.class);
 		 
 		job.setInputFormatClass(TextInputFormat.class);

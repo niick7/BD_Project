@@ -33,6 +33,7 @@ public class RelativeFrequency {
           if(valueI.equals(valueJ))
             break;
           Pair pair = new Pair(valueI, valueJ);
+          System.out.println(pair);
           context.write(pair, one);
         }
       }

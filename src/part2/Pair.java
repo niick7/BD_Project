@@ -39,6 +39,8 @@ public class Pair implements WritableComparable<Pair> {
   }
 
   public int compareTo(Pair o) {
+    if(this == null || o == null)
+      return -1;
     int result = this.key.compareTo(o.getKey());
     return result == 0 ? this.value.compareTo(o.getValue()) : result;
   }
