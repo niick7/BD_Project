@@ -32,8 +32,7 @@ public class RelativeFrequency {
             continue;
           if(valueI.equals(valueJ))
             break;
-          Pair pair = new Pair(valueI, valueJ);
-          System.out.println(pair);
+          Pair pair = new Pair(new Text(valueI), new Text(valueJ));
           context.write(pair, one);
         }
       }
@@ -58,10 +57,9 @@ public class RelativeFrequency {
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
-    Job job = Job.getInstance(conf, "Relative Frequency");
+    Job job = Job.getInstance(conf, "RelativeFrequency");
     job.setJarByClass(RelativeFrequency.class);
     job.setMapperClass(RelativeFrequency.TokenizerMapper.class);
-    job.setCombinerClass(RelativeFrequency.IntSumReducer.class);
     job.setReducerClass(RelativeFrequency.IntSumReducer.class);
     job.setOutputKeyClass(Pair.class);
     job.setOutputValueClass(IntWritable.class);

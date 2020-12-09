@@ -1,35 +1,41 @@
 package part2;
 
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
-public class Pair implements WritableComparable<Pair> {
-  private String key;
-  private String value;
+public class Pair implements Writable, WritableComparable<Pair> {
+  private Text key;
+  private Text value;
 
-  public Pair() {};
+  public Pair() {
+    this.key = new Text("");
+    this.value = new Text("");
+  };
 
-  public Pair(String key, String value) {
-    this.key = key;
-    this.value = value;
+  public Pair(Text key, Text value) {
+    this.setKey(key);
+    this.setValue(value);
   }
 
-  public String getKey() {
+  public Text getKey() {
     return key;
   }
 
-  public void setKey(String key) {
+  public void setKey(Text key) {
     this.key = key;
   }
 
-  public String getValue() {
+  public Text getValue() {
     return value;
   }
 
-  public void setValue(String value) {
+  public void setValue(Text value) {
     this.value = value;
   }
 
@@ -38,6 +44,7 @@ public class Pair implements WritableComparable<Pair> {
     return "(" + key + ", " + value + ')';
   }
 
+  @Override
   public int compareTo(Pair o) {
     if(this == null || o == null)
       return -1;
@@ -45,7 +52,20 @@ public class Pair implements WritableComparable<Pair> {
     return result == 0 ? this.value.compareTo(o.getValue()) : result;
   }
 
-  public void write(DataOutput dataOutput) throws IOException { }
+  @Override
+  public void write(DataOutput out) throws IOException {
+    key.write(out);
+    value.write(out);
+  }
 
-  public void readFields(DataInput dataInput) throws IOException { }
+  @Override
+  public void readFields(DataInput in) throws IOException {
+    key.readFields(in);
+    value.readFields(in);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(key, value);
+  }
 }
