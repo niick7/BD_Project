@@ -38,7 +38,7 @@ $ docker cp input.tar $CONTAINER_ID:/usr/local/hadoop
 # bin/hadoop fs -put input/part4/b/* project/part4/input
 
 // Run application
-bin/hadoop jar part4.jar part4.InMapperPairMapperStrikeReducerRelativeFrequency project/part4/input project/part4/output
+# bin/hadoop jar part4.jar part4.InMapperPairMapperStrikeReducerRelativeFrequency project/part4/input project/part4/output
 
 // Check output
 # bin/hadoop fs -cat project/part4/output/*

@@ -38,7 +38,7 @@ $ docker cp input.tar $CONTAINER_ID:/usr/local/hadoop
 # bin/hadoop fs -put input/part1/b/* project/part1/b/input
 
 // Run application
-bin/hadoop jar part1b.jar part1.b.InMapperWordCount project/part1/b/input project/part1/b/output
+# bin/hadoop jar part1b.jar part1.b.InMapperWordCount project/part1/b/input project/part1/b/output
 
 // Check output
 # bin/hadoop fs -cat project/part1/b/output/*
