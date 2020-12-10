@@ -1,4 +1,4 @@
-package part4.a;
+package part4;
 
 import java.io.DataInput;
 import java.io.DataOutput;

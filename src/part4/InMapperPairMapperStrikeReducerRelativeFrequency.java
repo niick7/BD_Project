@@ -1,4 +1,4 @@
-package part4.a;
+package part4;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -7,7 +7,9 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -15,14 +17,14 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class InMapperPairRelativeFrequency {
+public class InMapperPairMapperStrikeReducerRelativeFrequency {
   public static class MyMapper extends Mapper<Object, Text, StrPairWritable, IntWritable> {
-    Map <StrPairWritable, Integer> map = new LinkedHashMap<>();
+    Map<StrPairWritable, Integer> map = new LinkedHashMap<>();
 
     public void map (Object key, Text value, Context context) throws IOException, InterruptedException {
       String[] strValues = value.toString().split(" ");
       Integer strLength = strValues.length;
-      for(int i = 0; i < strLength; i++) {
+      for(int i = 0; i < strLength - 1; i++) {
         String valueI = strValues[i].trim();
         if(valueI.equals(""))
           continue;
@@ -58,24 +60,36 @@ public class InMapperPairRelativeFrequency {
     }
   }
 
-  public static class MyReducer extends Reducer<StrPairWritable, IntWritable, StrPairWritable, IntWritable> {
-    private IntWritable result = new IntWritable();
+
+  public static class MyReducer extends Reducer<StrPairWritable, IntWritable, Text, MapWritable> {
+    private Text prevKey = new Text("");
+    private Double total = 0.0;
+    private MapWritable mapWritableValue = new MapWritable();
 
     public void reduce(StrPairWritable pair, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
-      int sum = 0;
-      for (IntWritable val : values) {
-        sum += val.get();
+      double sum = 0.0;
+      for (IntWritable value : values) {
+        sum += value.get();
       }
-      result.set(sum);
-      context.write(pair, result);
+      Text key = new Text(pair.getKey());
+      System.out.println(pair.toString());
+      if (!prevKey.equals(key)) {
+        mapWritableValue.clear();
+        prevKey = key;
+        total = 0.0;
+        context.write(new Text(key), mapWritableValue);
+      }
+      total += sum;
+      mapWritableValue.put(new Text(pair.getValue()), new FloatWritable((float) (sum/total)));
+      System.out.println(mapWritableValue.entrySet().toString());
     }
   }
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
 
-    Job job = Job.getInstance(conf, "InMapperPairRelativeFrequency");
-    job.setJarByClass(InMapperPairRelativeFrequency.class);
+    Job job = Job.getInstance(conf, "InMapperPairMapperStrikeReducerRelativeFrequency");
+    job.setJarByClass(InMapperPairMapperStrikeReducerRelativeFrequency.class);
 
     job.setMapperClass(MyMapper.class);
     job.setReducerClass(MyReducer.class);

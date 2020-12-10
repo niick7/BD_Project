@@ -19,7 +19,7 @@ public class PairRelativeFrequency {
     public void map (Object key, Text value, Context context) throws IOException, InterruptedException {
       String[] strValues = value.toString().split(" ");
       int strLength = strValues.length;
-      for(int i = 0; i < strLength; i++) {
+      for(int i = 0; i < strLength - 1; i++) {
         String valueI = strValues[i].trim();
         if(valueI.equals(""))
           continue;
