@@ -1,12 +1,15 @@
 package part4;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
@@ -82,7 +85,7 @@ public class InMapperPairMapperStrikeReducerRelativeFrequency {
       total += sum;
       mapWritableValue.put(new Text(pair.getValue()), new FloatWritable((float) (sum/total)));
       System.out.println(mapWritableValue.entrySet().toString());
-    }
+	}
   }
 
   public static void main(String[] args) throws Exception {
@@ -92,7 +95,8 @@ public class InMapperPairMapperStrikeReducerRelativeFrequency {
     job.setJarByClass(InMapperPairMapperStrikeReducerRelativeFrequency.class);
 
     job.setMapperClass(MyMapper.class);
-    job.setReducerClass(MyReducer.class);
+    // job.setReducerClass(MyReducer.class);
+    job.setReducerClass(HLMyReducer.class);
 
     job.setOutputKeyClass(StrPairWritable.class);
     job.setOutputValueClass(IntWritable.class);
@@ -101,5 +105,65 @@ public class InMapperPairMapperStrikeReducerRelativeFrequency {
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
     System.exit(job.waitForCompletion(true) ? 0 : 1);
+  }
+  
+  public static class HLMyReducer extends Reducer<StrPairWritable, IntWritable, Text, DoubleWritable> {
+//	  Method initialize:
+//      	wPrev = null
+//        H = new AssociativeArray();
+//      Method reduce (Pair(w, u), [C1, C2, C3, ...])
+//      	if (w != wPrev  && wPrev != null) then:
+//        	total = total(H)
+//            Emit(wPrev, H / total)                    
+//            H.clear()
+//        H{u} = sum(C1,C2….)
+//        wPrev = w
+//      Method close:
+//      	total = total(H)
+//        Emit(wPrev, H / total)
+
+	  // Method initialize:
+	  private Text kPrev = new Text("");
+	  private List<Double> mapH = new ArrayList<Double>();
+	  private double totalH = 0.0;
+	  double lastsum = 0.0;
+	  // Method reduce (Pair(w, u), [C1, C2, C3, ...])
+	  public void reduce(StrPairWritable pair, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException {
+		  // get sum = sum (C1, C2,...)
+		  double sum = 0.0;
+	      for (IntWritable value : values) {
+	    	  sum += value.get();
+	      }
+	      lastsum = sum;
+	      // check: if change key
+		  Text key = new Text(pair.getKey());
+		  if (!key.equals(kPrev) && !kPrev.equals("")) {
+			  // Emit for previous Key
+			  double total = getTotal(mapH);
+			  context.write(new Text(kPrev), new DoubleWritable(sum/total));
+			  // Reset and prepare for current Key
+			  mapH = new ArrayList<Double>();
+		  }
+		  // ------ key continue
+	      mapH.add(sum);
+		  kPrev = key;
+		  // update totalH
+	      totalH += sum;
+	  } // end reduce
+
+	@Override
+	public void cleanup(Context context) throws IOException, InterruptedException {
+		// Emit for previous Key
+		double total = getTotal(mapH);
+		context.write(new Text(kPrev), new DoubleWritable(lastsum/total));	
+	} 
+	// Using for get total
+	public double getTotal(List<Double> list) {
+		double result = 0.0;
+		for (int i = 0; i < list.size(); i++)
+			result += list.get(i);
+		// return value
+		return result;
+	} 
   }
 }
