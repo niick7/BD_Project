@@ -1,0 +1,48 @@
+// Export jar file from the BD_Project/src/part3 to ~/Desktop/part3.jar
+
+// Open terminal on MacOS
+
+// Jump into hadoop docker linux
+$ docker run -it sequenceiq/hadoop-docker:2.7.0 /etc/bootstrap.sh -bash
+
+// Open another terminal tab and check current hadoop docker $CONTAINER_ID
+$ docker ps
+
+// Move part3.jar file from Desktop to Docker container
+$ docker cp ~/Desktop/part3.jar $CONTAINER_ID:/usr/local/hadoop
+
+// Change directory to your project
+$ cd $YOUR_PROJECT_DIR
+
+// Compress the input folder to tar file
+$ tar cvzf input.tar.gz input/
+
+// Also move input.tar to Docker container
+$ docker cp input.tar $CONTAINER_ID:/usr/local/hadoop
+
+// Go back to previous commandline tab. The tab that helped you jump into hadoop docker
+
+// Go to /usr/local/hadoop directory
+# cd /usr/local/hadoop
+
+// Uncompress tar file
+# tar -zxvf input.tar.gz
+
+// Make directory for part3 input
+# bin/hadoop fs -mkdir project
+# bin/hadoop fs -mkdir project/part3
+# bin/hadoop fs -mkdir project/part3
+# bin/hadoop fs -mkdir project/part3/input
+
+// Move input sample test file to project part3
+# bin/hadoop fs -put input/part3/b/* project/part3/input
+
+// Run application
+bin/hadoop jar part3.jar part3.StripeRelativeFrequency project/part3/input project/part3/output
+
+// Check output
+# bin/hadoop fs -cat project/part3/output/*
+
+// To run application again. You MUST delete the output result first:
+# bin/hadoop fs -rm -r project/part3/output
+

@@ -1,0 +1,48 @@
+// Export jar file from the BD_Project/src/part1.d to ~/Desktop/part1d.jar
+
+// Open terminal on MacOS
+
+// Jump into hadoop docker linux
+$ docker run -it sequenceiq/hadoop-docker:2.7.0 /etc/bootstrap.sh -bash
+
+// Open another terminal tab and check current hadoop docker $CONTAINER_ID
+$ docker ps
+
+// Move part1d.jar file from Desktop to Docker container
+$ docker cp ~/Desktop/part1d.jar $CONTAINER_ID:/usr/local/hadoop
+
+// Change directory to your project
+$ cd $YOUR_PROJECT_DIR
+
+// Compress the input folder to tar file
+$ tar cvzf input.tar.gz input/
+
+// Also move input.tar to Docker container
+$ docker cp input.tar $CONTAINER_ID:/usr/local/hadoop
+
+// Go back to previous commandline tab. The tab that helped you jump into hadoop docker
+
+// Go to /usr/local/hadoop directory
+# cd /usr/local/hadoop
+
+// Uncompress tar file
+# tar -zxvf input.tar.gz
+
+// Make directory for part1 input
+# bin/hadoop fs -mkdir project
+# bin/hadoop fs -mkdir project/part1
+# bin/hadoop fs -mkdir project/part1/d
+# bin/hadoop fs -mkdir project/part1/d/input
+
+// Move input sample test file to project part1d
+# bin/hadoop fs -put input/part1/b/* project/part1/d/input
+
+// Run application
+bin/hadoop jar part1d.jar part1.d.InMapperAvgValue project/part1/d/input project/part1/d/output
+
+// Check output
+# bin/hadoop fs -cat project/part1/d/output/*
+
+// To run application again. You MUST delete the output result first:
+# bin/hadoop fs -rm -r project/part1/d/output
+

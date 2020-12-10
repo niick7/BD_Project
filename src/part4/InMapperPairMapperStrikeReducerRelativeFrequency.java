@@ -109,18 +109,18 @@ public class InMapperPairMapperStrikeReducerRelativeFrequency {
   
   public static class HLMyReducer extends Reducer<StrPairWritable, IntWritable, Text, DoubleWritable> {
 //	  Method initialize:
-//      	wPrev = null
-//        H = new AssociativeArray();
-//      Method reduce (Pair(w, u), [C1, C2, C3, ...])
-//      	if (w != wPrev  && wPrev != null) then:
-//        	total = total(H)
-//            Emit(wPrev, H / total)                    
-//            H.clear()
-//        H{u} = sum(C1,C2….)
-//        wPrev = w
-//      Method close:
-//      	total = total(H)
-//        Emit(wPrev, H / total)
+//  ï¿½ï¿½ï¿½ï¿½	wPrev = null
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H = new AssociativeArray();
+//  ï¿½ï¿½ï¿½ Method reduce (Pair(w, u), [C1, C2, C3, ...])
+//  ï¿½ ï¿½ 	if (w != wPrevï¿½ && wPrev != null) then:
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	total = total(H)
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Emit(wPrev, H / total)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H.clear()
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½H{u} = sum(C1,C2ï¿½.)
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½wPrev = w
+//  ï¿½ï¿½ï¿½ï¿½Method close:
+//  ï¿½ï¿½ï¿½ï¿½	total = total(H)
+//  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Emit(wPrev, H / total)
 
 	  // Method initialize:
 	  private Text kPrev = new Text("");
