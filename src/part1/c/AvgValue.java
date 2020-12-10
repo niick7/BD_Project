@@ -16,9 +16,12 @@ public class AvgValue {
   public static class MyMapper extends Mapper<Object, Text, Text, IntWritable>{
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
       String[] line = value.toString().trim().split(" ");
-      String ipAddr = line[0];
-      int	   ipVal  = Integer.parseInt(line[line.length - 1]);
-      context.write(new Text(ipAddr), new IntWritable(ipVal));
+      String ipAddr = line[0].trim();
+      String strIpVal = line[line.length - 1].trim();
+      if (!strIpVal.equals("-")) {
+        int	ipVal = Integer.parseInt(strIpVal);
+        context.write(new Text(ipAddr), new IntWritable(ipVal));
+      }
     }
   }
 

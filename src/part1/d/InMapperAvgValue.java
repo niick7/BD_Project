@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -18,28 +17,26 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class AvgValue {
+public class InMapperAvgValue {
   public static class MyMapper extends Mapper<Object, Text, Text, IntPairWritable>{
     HashMap<String, Integer> mapSum = new HashMap<String, Integer>();
     HashMap<String, Integer> mapCount = new HashMap<String, Integer>();
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
       String[] line = value.toString().trim().split(" ");
-      String ipAddr = line[0];
-      int	   ipVal  = Integer.parseInt(line[line.length - 1]);
-      // Sum: Check and update value
-      if (mapSum.containsKey(ipAddr)) {
-        Integer sum = (Integer) mapSum.get(ipAddr) + ipVal;
-        mapSum.put(ipAddr, sum);
-      } else {
-        mapSum.put(ipAddr, ipVal);
-      }
-      // Count: Check and update value
-      if (mapCount.containsKey(ipAddr)) {
-        Integer count = (Integer) mapCount.get(ipAddr) + 1;
-        mapCount.put(ipAddr, count);
-      } else {
-        mapCount.put(ipAddr, 1);
+      String ipAddr = line[0].trim();
+      String strIpVal = line[line.length - 1].trim();
+      if (!strIpVal.equals("-")) {
+        int ipVal = Integer.parseInt(strIpVal);
+        if (mapSum.containsKey(ipAddr)) {
+          Integer sum = (Integer) mapSum.get(ipAddr) + ipVal;
+          mapSum.put(ipAddr, sum);
+        } else mapSum.put(ipAddr, ipVal);
+
+        if (mapCount.containsKey(ipAddr)) {
+          Integer count = (Integer) mapCount.get(ipAddr) + 1;
+          mapCount.put(ipAddr, count);
+        } else mapCount.put(ipAddr, 1);
       }
     }
 
@@ -48,9 +45,9 @@ public class AvgValue {
 
       while (itr1.hasNext()) {
         Entry<String, Integer> entry1 = itr1.next();
-        String ipAddr 	= entry1.getKey();
-        Integer sum 	= entry1.getValue();
-        Integer count 	= (Integer) mapCount.get(ipAddr);
+        String ipAddr = entry1.getKey();
+        Integer sum = entry1.getValue();
+        Integer count = (Integer) mapCount.get(ipAddr);
         // Emit
         context.write(new Text(ipAddr), new IntPairWritable(sum, count));
       }
@@ -74,11 +71,11 @@ public class AvgValue {
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
 
-    Job job = new Job(conf, "AvgValue");
-    job.setJarByClass(AvgValue.class);
+    Job job = new Job(conf, "InMapperAvgValue");
+    job.setJarByClass(InMapperAvgValue.class);
 
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputValueClass(IntPairWritable.class);
 
     job.setMapperClass(MyMapper.class);
     job.setReducerClass(MyReducer.class);

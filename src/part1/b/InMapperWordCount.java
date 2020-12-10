@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class WordCount {
+public class InMapperWordCount {
   public static class MyMapper extends Mapper<Object, Text, Text, IntWritable> {
     private Map<String, Integer> map = new LinkedHashMap<>();
 
@@ -60,7 +60,7 @@ public class WordCount {
     Configuration conf = new Configuration();
 
     Job job = new Job(conf, "InMapperWordCount");
-    job.setJarByClass(WordCount.class);
+    job.setJarByClass(InMapperWordCount.class);
 
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
